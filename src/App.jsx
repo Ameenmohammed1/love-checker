@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 export default function App() {
   const [step, setStep] = useState(1);
@@ -11,32 +12,28 @@ export default function App() {
   const handleCommitAnswer = async (answer) => {
     setIsCommitted(answer);
 
-    // If "No", submit only status and skip to result
     if (answer === "No") {
       try {
-        await fetch(
-          "https://script.google.com/macros/s/AKfycbwqa6xgYzzJ3aUVc5ls0BfFPvdO5acenN7xfNbyOsQw-Y2DWfZvbwU-aIa8C5ARtMtFiA/exec",
+        await axios.post(
+          "https://love-checker-server.vercel.app/submit",
           {
-            method: "POST",
+            name: "",
+            loverName: "",
+            status: "No",
+          },
+          {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              name: "",
-              loverName: "",
-              status: "No",
-            }),
           }
         );
       } catch (error) {
         console.error("Error saving to Google Sheet:", error);
       }
 
-      // Show "No" result screen immediately
       setMatchResult("No relationship to check 💔");
       setStep(3);
     } else {
-      // If Yes, move to name input step
       setStep(2);
     }
   };
@@ -49,26 +46,21 @@ export default function App() {
     const result = `${percentage}% Love Match 💖`;
     setMatchResult(result);
 
-
-
     try {
-      await fetch(
-        "https://script.google.com/macros/s/AKfycbwqa6xgYzzJ3aUVc5ls0BfFPvdO5acenN7xfNbyOsQw-Y2DWfZvbwU-aIa8C5ARtMtFiA/exec",
+      const res = await axios.post(
+        "https://love-checker-server.vercel.app/submit",
         {
-          method: "POST",
+          name: yourName,
+          loverName: crushName,
+          status: "Yes",
+        },
+        {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            name: yourName,
-            loverName: crushName,
-            status: "Yes",
-          }),
         }
-      ).then((res)=>{
-        console.log(res);
-        
-      })
+      );
+      console.log(res);
     } catch (error) {
       console.error("Error saving to Google Sheet:", error);
     }
